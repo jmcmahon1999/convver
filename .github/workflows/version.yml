@@ -51,7 +51,7 @@ jobs:
       # - run: npm install -g @jmcmahon1999/convver --@jmcmahon1999:registry=https://npm.pkg.github.com/
       #  env:
       #    GITHUB_TOKEN: ${{ secrets.CONVVER_PAT }}
-      - run: npm install
+      - run: npm ci
       - run: npm link
       - name: Convver Update
         id: convver-update
