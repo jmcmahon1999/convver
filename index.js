@@ -100,6 +100,8 @@ const update = async (projectType, noTag, tagMessage, prerelease) => {
     throw new Error(`Unclean working directory! Commit your changes.`);
   }
   const project = getPluginForProjectType(projectType);
+  const commitFiles = project?.commitFiles || [];
+  commitFiles.push(project.file);
   const currentVersion = await current();
   const newVersion = scheme.verifyBump(
     currentVersion,
@@ -112,12 +114,7 @@ const update = async (projectType, noTag, tagMessage, prerelease) => {
   await project.update(newVersion);
   let response = "Changes not committed.";
   if (!noTag)
-    response = await createTag(
-      newVersion,
-      tagMessage,
-      prerelease,
-      project.file,
-    );
+    response = await createTag(newVersion, tagMessage, prerelease, commitFiles);
   if (getVerbosityLevel() > 0) {
     console.info(`Version Bumped: v${currentVersion} -> v${newVersion}`);
   }

@@ -1,4 +1,5 @@
 const { local, update } = require("../../");
+const { readJSON } = require("../../lib/util");
 const semver = require("semver");
 const tmp = require("tmp-promise");
 const fs = require("fs");
@@ -26,6 +27,7 @@ const commitTypes = {
 
 const setupNpm = async (opts) => {
   await exec("npm init -y", ...opts);
+  await exec("npm i --package-lock-only");
   await exec("git add -A", ...opts);
   await exec(`git commit -a -m "chore: npm init"`, ...opts);
   await exec(`git tag -a "v1.0.0" -m "1.0.0"`, ...opts);
@@ -83,9 +85,11 @@ describe("update", () => {
       await makeConventionalCommit(tmpDir.path, commitType);
       let version = await update("npm", false, "", pre);
       let fileVersion = await local("npm");
+      let lockVersion = (await readJSON(tmpDir.path + "/package-lock.json")).version;
       expect(version).toBeDefined();
       expect(semver.valid(version)).toBeDefined();
       expect(version).toBe(fileVersion);
+      expect(version).toBe(lockVersion);
       expect(semver.diff("1.0.0", version)).toBe(bump);
       if (bump.includes("pre")) {
         expectedPreID = pre && typeof pre === "string" ? pre : 0;

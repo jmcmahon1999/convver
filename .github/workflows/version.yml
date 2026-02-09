@@ -66,7 +66,12 @@ jobs:
     env:
       TAG: ${{ needs.version.outputs.tag }}
     steps:
+      - run: npm install -g semver
+      - name: Check Major Version
+        id: major-version
+        run: echo "major=$(printf "%s" "${TAG#v}" | awk -F. '{print $1}')" >> $GITHUB_OUTPUT
       - name: Create release
+        if: ${{ steps.major-version.outputs.major != '0' }}
         env:
           GITHUB_TOKEN: ${{ secrets.CONVVER_PAT }}
         run: |

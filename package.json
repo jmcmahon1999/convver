@@ -1,6 +1,6 @@
 {
     "name": "@jmcmahon1999/convver",
-    "version": "3.0.4",
+    "version": "0.0.0",
     "main": "index.js",
     "scripts": {
         "test": "jest --verbose"
