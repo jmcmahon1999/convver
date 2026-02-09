@@ -1,0 +1,78 @@
+name: Automatic Versioning
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - uses: abatilo/actions-poetry@v4
+      - run: npm set "//npm.pkg.github.com/:_authToken" ${{secrets.CONVVER_PAT}}
+      - run: npm ci
+      - run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - run: npm test
+        env:
+          TMPDIR: ${{ runner.temp }}
+
+  version:
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+        tag: ${{ steps.convver-version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Set Credentials
+        run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+      - run: npm set "//npm.pkg.github.com/:_authToken" ${{secrets.CONVVER_PAT}}
+      - run: npm install -g @jmcmahon1999/convver --@jmcmahon1999:registry=https://npm.pkg.github.com/
+        env:
+          GITHUB_TOKEN: ${{ secrets.CONVVER_PAT }}
+      - name: Convver Update
+        id: convver-update
+        run: convver update npm -q
+      - name: Get New Version
+        id: convver-version
+        run: echo "tag=$( convver current npm)" >> $GITHUB_OUTPUT
+      - name: Push Changes
+        if: steps.convver-update.outcome == 'success'
+        run: git push --follow-tags
+  release:
+    needs: version
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ needs.version.outputs.tag }}
+    steps:
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.CONVVER_PAT }}
+        run: |
+          gh release create ${TAG/#/v} \
+            --repo="$GITHUB_REPOSITORY" \
+            --title="${TAG#v}" \
+            --generate-notes \
+            --fail-on-no-commits \
+            --verify-tag

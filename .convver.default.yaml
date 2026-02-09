@@ -1,0 +1,19 @@
+﻿version-scheme: semver
+commit-types:
+  major:
+    - breaking
+  minor:
+    - feat
+  patch:
+    - fix
+    - refactor
+    - style
+    - ops
+    - build
+  quiet:
+    - docs
+    - test
+    - ci
+  unsafe:
+    - chore
+commit-message: convver automatic versioning.
