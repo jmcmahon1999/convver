@@ -198,9 +198,9 @@ on:
     branches:
       - main
 jobs:
-  build:
+  test:
     # ---
-    # Verify build script and tests.
+    # Run tests.
     # -
     # -
     # ----
