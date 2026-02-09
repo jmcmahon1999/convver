@@ -21,7 +21,6 @@ jobs:
         with:
           python-version: "3.12"
       - uses: abatilo/actions-poetry@v4
-      - run: npm set "//npm.pkg.github.com/:_authToken" ${{secrets.CONVVER_PAT}}
       - run: npm ci
       - run: |
           git config --global user.name "${GITHUB_ACTOR}"
@@ -47,10 +46,6 @@ jobs:
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-      - run: npm set "//npm.pkg.github.com/:_authToken" ${{secrets.CONVVER_PAT}}
-      # - run: npm install -g @jmcmahon1999/convver --@jmcmahon1999:registry=https://npm.pkg.github.com/
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.CONVVER_PAT }}
       - run: npm ci
       - run: npm link
       - name: Convver Update
