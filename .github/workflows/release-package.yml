@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: "3.12"
       - uses: abatilo/actions-poetry@v4
-      - run: npm set "//npm.pkg.github.com/:_authToken" ${{secrets.CONVVER_PAT}}
+      - run: npm set "//npm.pkg.github.com/:_authToken" ${{secrets.GITHUB_TOKEN}}
       - run: npm ci
       - run: |
           git config --global user.name "${GITHUB_ACTOR}"
@@ -44,9 +44,9 @@ jobs:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
       - run: npm install -g npm@latest
-      - run: npm set "//npm.pkg.github.com/:_authToken" ${{secrets.CONVVER_PAT}}
+      - run: npm set "//npm.pkg.github.com/:_authToken" ${{secrets.GITHUB_TOKEN}}
       - run: npm ci
 
       - run: npm publish --@jmcmahon1999/registry=https://npm.pkg.github.com/ --tag latest
         env:
-          NODE_AUTH_TOKEN: ${{secrets.CONVVER_PAT}}
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
