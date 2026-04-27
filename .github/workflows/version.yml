@@ -50,7 +50,7 @@ jobs:
       - run: npm link
       - name: Convver Update
         id: convver-update
-        run: convver update npm -q
+        run: convver update npm -q -l
       - name: Get New Version
         id: convver-version
         run: echo "tag=$( convver current npm)" >> $GITHUB_OUTPUT
