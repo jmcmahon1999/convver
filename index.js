@@ -4,6 +4,7 @@ const {
   getLocalCommits,
   checkTag,
   createTag,
+  updateLatestTag,
 } = require("./lib/git");
 const {
   checkCommits,
@@ -90,10 +91,10 @@ const bump = async (prerelease) => {
  * @async
  * @param {string} projectType - type of project, e.g. poetry, npm etc.
  * @param {boolean} noTag - update project files without creating git tag.
- * @param {string} tagMessage - git tag message string.
+ * @param {string} commitMsg - git commit message string, defaults to "commit-message" config value.
  * @param {string} prerelease - prerelease identifier; if set, the version is treated as a prerelease.
  */
-const update = async (projectType, noTag, tagMessage, prerelease) => {
+const update = async (projectType, noTag, commitMsg, prerelease, latest) => {
   const config = getConfig();
   const scheme = require(`./lib/version/${config["version-scheme"]}`);
   if (await hasChanges()) {
@@ -108,19 +109,38 @@ const update = async (projectType, noTag, tagMessage, prerelease) => {
     await version(prerelease),
   );
   if (newVersion == currentVersion) return currentVersion;
-  if (!noTag && (await checkTag(newVersion))) {
+  if (!noTag && (await checkTag(`v${newVersion}`))) {
     throw new Error(`Tag 'v${newVersion}' already exists.`);
   }
   await project.update(newVersion);
-  let response = "Changes not committed.";
-  if (!noTag)
-    response = await createTag(newVersion, tagMessage, prerelease, commitFiles);
-  if (getVerbosityLevel() > 0) {
-    console.info(`Version Bumped: v${currentVersion} -> v${newVersion}`);
+  if (!noTag) {
+    const response = await createTag(
+      newVersion,
+      commitMsg || config["commit-message"],
+      prerelease,
+      commitFiles,
+    );
+    if (getVerbosityLevel() > 0 && !response)
+      console.warn("Could not commit and tag changes.");
+    else if (getVerbosityLevel() > 0) {
+      if (getVerbosityLevel() > 1) console.info(response);
+      console.info(`Version Bumped: v${currentVersion} -> v${newVersion}`);
+    }
   }
-  if (getVerbosityLevel() > 1) {
-    console.info(response);
+
+  if (!noTag && latest) {
+    const latestTag =
+      typeof latest === "string" || latest instanceof String
+        ? latest
+        : config["latest-tag"];
+    const response = await updateLatestTag(latestTag);
+    if (getVerbosityLevel() > 0 && response) {
+      console.warn(`Could not update tag: ${latestTag}`);
+    } else if (getVerbosityLevel() > 0) {
+      console.info(`Tag ${latestTag} updated to v${newVersion}`);
+    }
   }
+
   return newVersion;
 };
 

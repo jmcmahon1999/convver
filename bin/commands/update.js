@@ -22,11 +22,21 @@ module.exports = {
         type: "string",
         demandOption: false,
       })
+      .option("latest", {
+        alias: "l",
+        desc: "Update the 'latest' tag to point to the new version. If passed without value, the config field 'latest-tag' is used",
+        type: "string",
+        demandOption: false,
+        coerce: (arg) => {
+          if (arg === "" || arg === undefined) return true;
+          return arg;
+        },
+      })
       .positional("projectType", {
         describe: "project file, e.g. npm, poetry",
       })
       .conflicts("noTag", "tagMessage")
-      .group(["noTag", "tagMessage", "prerelease"], "Options:");
+      .group(["noTag", "tagMessage", "prerelease", "latest"], "Options:");
   },
   handler: async (argv) => {
     console.info(
@@ -35,6 +45,7 @@ module.exports = {
         argv.noTag,
         argv.tagMessage,
         argv.prerelease,
+        argv.latest,
       ),
     );
   },

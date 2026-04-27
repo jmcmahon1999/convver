@@ -17,3 +17,4 @@ commit-types:
   unsafe:
     - chore
 commit-message: convver automatic versioning.
+latest-tag: latest
